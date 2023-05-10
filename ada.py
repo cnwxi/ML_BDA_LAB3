@@ -1,6 +1,10 @@
 import numpy as np
 from load import load_data
 from sklearn.metrics import confusion_matrix
+from sklearn.metrics import precision_score
+from sklearn.metrics import accuracy_score
+from sklearn.metrics import recall_score
+from sklearn.metrics import f1_score
 
 
 class DecisionTreeClassifierWithWeight:
@@ -34,23 +38,14 @@ class DecisionTreeClassifierWithWeight:
         return 2 * (feature >= self.best_thres) - 1 if self.best_op == 1 else 2 * (feature < self.best_thres) - 1
 
     def score(self, X, y, sample_weight=None):
-        y_pre = self.predict(X)
+        y_pred = self.predict(X)
         if sample_weight is not None:
-            return np.sum((y_pre == y) * sample_weight)
-        cm = confusion_matrix(y, y_pre)
-        print(cm)
-        return np.mean(y_pre == y)
-
-
-train_features, train_labels, test_features, test_labels = load_data()
-
-train_features = np.array(train_features)
-train_labels = np.array(train_labels)
-train_labels = 2 * train_labels - 1  # 将0/1取值映射为-1/1取值
-test_features = np.array(test_features)
-test_labels = np.array(test_labels)
-test_labels = 2 * test_labels - 1  # 将0/1取值映射为-1/1取值
-print(DecisionTreeClassifierWithWeight().fit(train_features, train_labels).score(test_features, test_labels))
+            print(np.sum((y_pred == y) * sample_weight))
+        print('confusion_matrix', confusion_matrix(y, y_pred))
+        print('precision_score', precision_score(y, y_pred))
+        print('recall_score', recall_score(y, y_pred))
+        print('f1_score', f1_score(y, y_pred))
+        print('accuracy_score', accuracy_score(y, y_pred))
 
 
 class AdaBoostClassifier:
@@ -80,9 +75,21 @@ class AdaBoostClassifier:
 
     def score(self, X, y):
         y_pred = self.predict(X)
-        cm = confusion_matrix(y, y_pred)
-        print(cm)
-        return np.mean(y_pred == y)
+        print('confusion_matrix', confusion_matrix(y, y_pred))
+        print('precision_score', precision_score(y, y_pred))
+        print('recall_score', recall_score(y, y_pred))
+        print('f1_score', f1_score(y, y_pred))
+        print('accuracy_score', accuracy_score(y, y_pred))
 
 
-print(AdaBoostClassifier().fit(train_features, train_labels).score(test_features, test_labels))
+train_features, train_labels, test_features, test_labels = load_data()
+
+train_features = np.array(train_features)
+train_labels = np.array(train_labels)
+train_labels = 2 * train_labels - 1
+test_features = np.array(test_features)
+test_labels = np.array(test_labels)
+test_labels = 2 * test_labels - 1
+DecisionTreeClassifierWithWeight().fit(train_features, train_labels).score(test_features, test_labels)
+
+AdaBoostClassifier().fit(train_features, train_labels).score(test_features, test_labels)

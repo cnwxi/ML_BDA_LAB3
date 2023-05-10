@@ -2,7 +2,7 @@ import pandas as pd
 import torch
 
 
-def load_data(arg='Bayes'):
+def load_data():
     df_train = pd.read_csv('./adult_train.csv')
     df_test = pd.read_csv('./adult_test.csv')
     df_test.drop([0], inplace=True)
@@ -11,7 +11,7 @@ def load_data(arg='Bayes'):
     print(df_test.head())
 
     # , 'Relationship', 'Race'
-    drop_col = ['fnlwgt', 'Education', 'Country']
+    drop_col = ['fnlwgt', 'Education', 'Country', 'Relationship', 'Race']
     for i in [df_train, df_test]:
         for j in drop_col:
             i.drop(columns=j, axis=1, inplace=True)
@@ -36,39 +36,39 @@ def load_data(arg='Bayes'):
             int_col.append(i)
     print(f"object:{object_col}\n int:{int_col}")
 
-    df_train['AgeGroup'] = pd.cut(df_train.Age, range(0, 101, 10), right=False,
-                                  labels=[i * 10 for i in range(10)]).astype(int)
-    df_train.drop(columns='Age', axis=1, inplace=True)
-    df_test['AgeGroup'] = pd.cut(df_test.Age, range(0, 101, 10), right=False,
-                                 labels=[i * 10 for i in range(10)]).astype(int)
-    df_test.drop(columns='Age', axis=1, inplace=True)
-    df_train['EduGroup'] = pd.cut(df_train.Education_Num, range(0, 21, 5), right=False,
-                                  labels=[i * 5 for i in range(4)]).astype(int)
-    df_train.drop(columns='Education_Num', axis=1, inplace=True)
-    df_test['EduGroup'] = pd.cut(df_test.Education_Num, range(0, 21, 5), right=False,
-                                 labels=[i * 5 for i in range(4)]).astype(int)
-    df_test.drop(columns='Education_Num', axis=1, inplace=True)
+    # df_train['AgeGroup'] = pd.cut(df_train.Age, range(0, 101, 10), right=False,
+    #                               labels=[i * 10 for i in range(10)]).astype(int)
+    # df_train.drop(columns='Age', axis=1, inplace=True)
+    # df_test['AgeGroup'] = pd.cut(df_test.Age, range(0, 101, 10), right=False,
+    #                              labels=[i * 10 for i in range(10)]).astype(int)
+    # df_test.drop(columns='Age', axis=1, inplace=True)
+    # df_train['EduGroup'] = pd.cut(df_train.Education_Num, range(0, 21, 5), right=False,
+    #                               labels=[i * 5 for i in range(4)]).astype(int)
+    # df_train.drop(columns='Education_Num', axis=1, inplace=True)
+    # df_test['EduGroup'] = pd.cut(df_test.Education_Num, range(0, 21, 5), right=False,
+    #                              labels=[i * 5 for i in range(4)]).astype(int)
+    # df_test.drop(columns='Education_Num', axis=1, inplace=True)
 
     # print(df_train['Capital_Gain'].unique().max())
     # print(df_test['Capital_Gain'].unique().max())
     # print(df_train['Capital_Loss'].unique().max())
     # print(df_test['Capital_Loss'].unique().max())
 
-    df_train['Capital_Gain_Group'] = pd.cut(df_train.Capital_Gain, range(0, 100001, 5000), right=False,
-                                            labels=[i * 5000 for i in range(20)]).astype(int)
-    df_train.drop(columns='Capital_Gain', axis=1, inplace=True)
-
-    df_train['Capital_Loss_Group'] = pd.cut(df_train.Capital_Loss, range(0, 5001, 1000), right=False,
-                                            labels=[i * 1000 for i in range(5)]).astype(int)
-    df_train.drop(columns='Capital_Loss', axis=1, inplace=True)
-
-    df_test['Capital_Gain_Group'] = pd.cut(df_test.Capital_Gain, range(0, 100001, 5000), right=False,
-                                           labels=[i * 5000 for i in range(20)]).astype(int)
-    df_test.drop(columns='Capital_Gain', axis=1, inplace=True)
-
-    df_test['Capital_Loss_Group'] = pd.cut(df_test.Capital_Loss, range(0, 5001, 1000), right=False,
-                                           labels=[i * 1000 for i in range(5)]).astype(int)
-    df_test.drop(columns='Capital_Loss', axis=1, inplace=True)
+    # df_train['Capital_Gain_Group'] = pd.cut(df_train.Capital_Gain, range(0, 100001, 5000), right=False,
+    #                                         labels=[i * 5000 for i in range(20)]).astype(int)
+    # df_train.drop(columns='Capital_Gain', axis=1, inplace=True)
+    #
+    # df_train['Capital_Loss_Group'] = pd.cut(df_train.Capital_Loss, range(0, 5001, 1000), right=False,
+    #                                         labels=[i * 1000 for i in range(5)]).astype(int)
+    # df_train.drop(columns='Capital_Loss', axis=1, inplace=True)
+    #
+    # df_test['Capital_Gain_Group'] = pd.cut(df_test.Capital_Gain, range(0, 100001, 5000), right=False,
+    #                                        labels=[i * 5000 for i in range(20)]).astype(int)
+    # df_test.drop(columns='Capital_Gain', axis=1, inplace=True)
+    #
+    # df_test['Capital_Loss_Group'] = pd.cut(df_test.Capital_Loss, range(0, 5001, 1000), right=False,
+    #                                        labels=[i * 1000 for i in range(5)]).astype(int)
+    # df_test.drop(columns='Capital_Loss', axis=1, inplace=True)
 
     for i in object_col:
         df_train[i] = df_train[i].astype(str).apply(lambda val: val.replace(" ", ""))
@@ -76,20 +76,12 @@ def load_data(arg='Bayes'):
         df_train[i] = df_train[i].astype(str).apply(lambda val: val.replace(".", ""))
         df_test[i] = df_test[i].astype(str).apply(lambda val: val.replace(".", ""))
 
-    if arg != 'Bayes':
-        for col_name in object_col:
-            dd = pd.get_dummies(df_train[col_name], drop_first=True, prefix=col_name)
-            df_train = pd.concat([df_train.drop(columns=col_name, axis=1), dd], axis=1)
-        for col_name in object_col:
-            dd = pd.get_dummies(df_test[col_name], drop_first=True, prefix=col_name)
-            df_test = pd.concat([df_test.drop(columns=col_name, axis=1), dd], axis=1)
-
-    if arg == 'Bayes':
-        df_train_y = df_train['Target']
-        df_train_X = df_train.drop('Target', axis=1)
-        df_test_y = df_test['Target']
-        df_test_X = df_test.drop('Target', axis=1)
-        return df_train_X, df_train_y, df_test_X, df_test_y
+    for col_name in object_col:
+        dd = pd.get_dummies(df_train[col_name], drop_first=True, prefix=col_name)
+        df_train = pd.concat([df_train.drop(columns=col_name, axis=1), dd], axis=1)
+    for col_name in object_col:
+        dd = pd.get_dummies(df_test[col_name], drop_first=True, prefix=col_name)
+        df_test = pd.concat([df_test.drop(columns=col_name, axis=1), dd], axis=1)
 
     df_train_y = df_train['Target_>50K']
     df_train_X = df_train.drop('Target_>50K', axis=1)

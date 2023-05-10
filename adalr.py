@@ -8,12 +8,16 @@ from numpy import log
 from numpy import exp
 from tqdm import tqdm
 from sklearn.metrics import confusion_matrix
+from sklearn.metrics import precision_score
+from sklearn.metrics import accuracy_score
+from sklearn.metrics import recall_score
+from sklearn.metrics import f1_score
 
 
 class LR(nn.Module):
     def __init__(self, epoch=100, lr=0.02):
         super(LR, self).__init__()
-        self.features = nn.Linear(43, 1)
+        self.features = nn.Linear(34, 1)
         self.sigmoid = nn.Sigmoid()
 
         self.lr = lr
@@ -39,8 +43,16 @@ class LR(nn.Module):
 
     def predict(self, x):
         y_pred = self.forward(x)
-        mask = y_pred.ge(0.5).float().squeeze()  # 以0.5为阈值进行分类
-        return mask
+        y_pred = y_pred.ge(0.5).float().squeeze()  # 以0.5为阈值进行分类
+        return y_pred
+
+    def score(self, X, y):
+        y_pred = self.predict(X)
+        print('confusion_matrix', confusion_matrix(y, y_pred))
+        print('precision_score', precision_score(y, y_pred))
+        print('recall_score', recall_score(y, y_pred))
+        print('f1_score', f1_score(y, y_pred))
+        print('accuracy_score', accuracy_score(y, y_pred))
 
 
 class adaboost_lr:
@@ -52,7 +64,7 @@ class adaboost_lr:
 
     def fit(self, x, y):
         int_matrix = np.ones((1, self.n))
-        coe_matrix = np.ones((43, self.n))
+        coe_matrix = np.ones((34, self.n))
         alp_vector = np.ones((self.n, 1))
         for i in tqdm(range(self.n)):
             base_model = LR()
@@ -75,13 +87,21 @@ class adaboost_lr:
         final_int_matrix = int_matrix @ alp_vector / sum(alp_vector)
         self.final_coe_matrix = final_coe_matrix
         self.final_int_matrix = final_int_matrix
+        return self
 
     def predict(self, x):
         ypred = x @ self.final_coe_matrix + self.final_int_matrix
         ypred = self.sigmoid(ypred)
-        print(ypred)
         ypred = ypred.ge(0.5).float().squeeze()
         return ypred
+
+    def score(self, X, y):
+        y_pred = self.predict(X)
+        print('confusion_matrix', confusion_matrix(y, y_pred))
+        print('precision_score', precision_score(y, y_pred))
+        print('recall_score', recall_score(y, y_pred))
+        print('f1_score', f1_score(y, y_pred))
+        print('accuracy_score', accuracy_score(y, y_pred))
 
 
 train_features, train_labels, test_features, test_labels = load_data()
@@ -89,19 +109,8 @@ train_features, train_labels, test_features, test_labels = load_data()
 weight = pd.DataFrame({'real': train_labels, 'weight': 1 / len(train_labels)})
 print('LR 训练中')
 a = LR()
-a.fit(train_features, train_labels)
-mask = a.predict(test_features)
-cm1 = confusion_matrix(test_labels, mask)
-correct = ((mask == test_labels).sum())  # 计算正确预测的样本个数
-acc1 = correct.item() / test_labels.size(0)  # 计算分类准确率
+a.fit(train_features, train_labels).score(test_features, test_labels)
 
 print('adaboost_lr 训练中')
 aa = adaboost_lr()
-aa.fit(train_features, train_labels)
-mask = aa.predict(test_features)
-correct = ((mask == test_labels).sum())  # 计算正确预测的样本个数
-acc2 = correct.item() / test_labels.size(0)  # 计算分类准确率
-print(f'lr:acc:\t{acc1}\nadaboost_lr acc:{acc2}')
-cm2 = confusion_matrix(test_labels, mask)
-print(cm1)
-print(cm2)
+aa.fit(train_features, train_labels).score(test_features, test_labels)
